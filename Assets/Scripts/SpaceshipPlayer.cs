@@ -7,6 +7,8 @@
     Description:    Script for the players' spaceship. Inherits from Spaceship.
 */
 
+
+//[ RequireComponent( typeof( Rigidbody ) ) ] // Require a Rigidbody for collisions (Eg with enemy ships etc)
 public class SpaceshipPlayer : Spaceship
 {
     // Properties
@@ -35,5 +37,15 @@ public class SpaceshipPlayer : Spaceship
 
         // Check if the player is firing.
         if( Input.GetKey( this.fireKey ) == true ) { this.Fire(); }
+    }
+
+    //private void OnCollisionStay( Collision collision )
+    private void OnTriggerEnter( Collider collider )
+    {
+        // Destroy this ship if it collides with anything.
+        Destroy( this.gameObject );
+
+        // Notify the GameManager the game is over.
+        GameManager.instance.GameOver();
     }
 }

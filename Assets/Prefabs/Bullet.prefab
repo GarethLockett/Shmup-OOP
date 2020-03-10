@@ -46,6 +46,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moveSpeed: 150
   damage: 1
+  maximumRange: 100
+  isPlayerBullet: 0
+  fireSound: {fileID: 8300000, guid: 4836dd581a7d1314382e9c502fb43e85, type: 3}
 --- !u!1 &8060820777191468962
 GameObject:
   m_ObjectHideFlags: 0

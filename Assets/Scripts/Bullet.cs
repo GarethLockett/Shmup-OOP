@@ -20,7 +20,15 @@ public class Bullet : MonoBehaviour
 
     [HideInInspector] public bool isPlayerBullet;             // Tracks if the player fired this bullet (Otherwise was fired by an enemy ship)
 
+    public AudioClip fireSound;             // Sound that will be played when this bullet is instantiated.
+
     // Methods
+    private void Start()
+    {
+        // Play the fire sound.
+        AudioSource.PlayClipAtPoint( this.fireSound, Camera.main.transform.position );
+    }
+
     private void Update()
     {
         // Get the current bullet position (For linecasting)

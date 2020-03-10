@@ -28,6 +28,8 @@ public abstract class Spaceship : MonoBehaviour
     // Methods
     protected virtual void OnDestroy() // This 'virtual' version of OnDestroy() will be called by all ships when they are destroyed, unless overriden in a child class.
     {
+        //Debug.Log( "OnDestroy" );
+
         // Play the ships' destroyed sound (If reference assigned) when this ship is destroyed.
         if( this.destroyedSound != null )
         {
@@ -79,4 +81,5 @@ public abstract class Spaceship : MonoBehaviour
             Destroy( this.gameObject );
         }
     }
+
 }

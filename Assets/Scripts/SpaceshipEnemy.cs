@@ -44,4 +44,5 @@ public class SpaceshipEnemy : Spaceship
             GameManager.instance.AddScore( this.scoreValue );
         }
     }
+    
 }

@@ -34,4 +34,13 @@ public class GameManager : MonoBehaviour
             this.scoreText.text = this.score.ToString( "D8" );
         }
     }
+
+    public void GameOver()
+    {
+        // Update the displayed score.
+        if( this.scoreText != null )
+        {
+            this.scoreText.text = this.score.ToString( "D8" ) +"\n<color=red>Game Over!</color>";
+        }
+    }
 }
