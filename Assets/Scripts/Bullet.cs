@@ -50,17 +50,18 @@ public class Bullet : MonoBehaviour
                 if( ( spaceship is SpaceshipPlayer == true && this.isPlayerBullet == false ) 
                     || ( spaceship is SpaceshipEnemy == true && this.isPlayerBullet == true ) )
                 {
+                    // Do damge to the ship that got hit by this bullet.
                     spaceship.TakeDamage( this.damage );
 
                     // If this bullet has hit a ship, then destroy the bullet.
                     Destroy( this.gameObject );
-                    return; // Nothing more needs to happen with this bullet.
+
+                    return; // Nothing more needs to happen with this bullet. Return from this method.
                 }
             }
-
             
-            // NOTE: THIS SOMETIMES MISSES A HIT??!! last/next pos MIGHT be ending up within spher collider??... Spherecast? .. colliders + Rigidbodys
-
+            // NOTE:    Sometimes this linecast can miss a hit. This is because the ships may move putting the lastPosition AND nextPosition inside a ships collider.
+            //          Best to combine linecast with Rigidbody physics - which will catch if this bullet is within a collider.
         }
         else
         {

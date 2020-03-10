@@ -298,13 +298,16 @@ MonoBehaviour:
   hitPoints: 2
   moveSpeed: 25
   maximumMoveRange: 170
-  bulletPrefab: {fileID: 0}
+  bulletPrefab: {fileID: -5392130637798900073, guid: 51f9cc9151d94f14bab7de9bdaab344a,
+    type: 3}
   rateOfFire: 0.25
-  destroyedSound: {fileID: 0}
-  destroyedParticleSystem: {fileID: 0}
+  destroyedSound: {fileID: 8300000, guid: f2f2e35476e29824ab0d69270846637f, type: 3}
+  destroyedParticleSystem: {fileID: 3276143498104395397, guid: f0a7dfba9b402b44ba700a149b723350,
+    type: 3}
   movementType: 0
   scoreValue: 10
   bottomOfScreenRange: -120
+  randomFireTime: 3
 --- !u!1 &7129945001256098135
 GameObject:
   m_ObjectHideFlags: 0

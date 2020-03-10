@@ -23,28 +23,28 @@ public abstract class Spaceship : MonoBehaviour
 
     protected bool isPlayer;                            // Set by SpaceshipPlayer if true.
 
-    private float nextFireTime;                         // The next time (in seconds) the player can fire/instantiate a bullet.
+    protected float nextFireTime;                       // The next time (in seconds) the player can fire/instantiate a bullet.
 
     // Methods
-    protected virtual void OnDestroy() // This 'virtual' version of OnDestroy() will be called by all ships when they are destroyed, unless overriden in a child class.
+    protected void Destroy() // Use this instead of GameObject.Destroy() to avoid null exception error when stopping in Unity Editor :P
     {
-        //Debug.Log( "OnDestroy" );
-
-        // Play the ships' destroyed sound (If reference assigned) when this ship is destroyed.
-        if( this.destroyedSound != null )
+        // Play the ships' destroyed sound (If reference assigned and a camera exists) when this ship is destroyed.
+        if( this.destroyedSound != null && Camera.main != null )
         {
             // Play the destroyed sound at the location of the camera, so the camera can hear it (Eg may be too far away to be heard if we play it at the ship)
             AudioSource.PlayClipAtPoint( this.destroyedSound, Camera.main.transform.position );
         }
 
-        // Instantiate a particle system (If reference assigned) when this ship is destroyed.
-        if( this.destroyedParticleSystem != null )
+        // Instantiate a particle system (If reference assigned and a camera exists) when this ship is destroyed.
+        if( this.destroyedParticleSystem != null && Camera.main != null )
         {
             GameObject particleSystemGameObject = GameObject.Instantiate( this.destroyedParticleSystem.gameObject );
 
             // Position the newly instantiated particle system at the same position as this ship.
             particleSystemGameObject.transform.position = this.transform.position;
         }
+
+        Destroy( this.gameObject );
     }
 
     protected virtual void Fire()
@@ -78,7 +78,7 @@ public abstract class Spaceship : MonoBehaviour
         if( this.hitPoints <= 0 )
         {
             // Destroy the ship if hit points are less than or equal to zero.
-            Destroy( this.gameObject );
+            this.Destroy();
         }
     }
 

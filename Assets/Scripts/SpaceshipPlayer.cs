@@ -39,13 +39,41 @@ public class SpaceshipPlayer : Spaceship
         if( Input.GetKey( this.fireKey ) == true ) { this.Fire(); }
     }
 
-    //private void OnCollisionStay( Collision collision )
     private void OnTriggerEnter( Collider collider )
     {
-        // Destroy this ship if it collides with anything.
-        Destroy( this.gameObject );
+        // Check if the colliding game object has a Bullet component.
+        Bullet bullet = collider.gameObject.GetComponent<Bullet>();
+        if( bullet != null )
+        {
+            if( bullet.isPlayerBullet == false )
+            {
+                // Do damge to this ship.
+                this.TakeDamage( bullet.damage );
 
-        // Notify the GameManager the game is over.
+                // Check if this player has no hit points left.
+                if( this.hitPoints <= 0f )
+                {
+                    // Notify the GameManager the game is over.
+                    GameManager.instance.GameOver();
+                }
+
+                // Destroy the bullet hitting this ship.
+                Destroy( bullet.gameObject );
+            }
+        }
+
+        // Check if an enemy ship is colliding with this ship.
+        SpaceshipEnemy enemyShip = collider.gameObject.GetComponent<SpaceshipEnemy>();
+        if( enemyShip != null )
+        {
+            // Destroy this ship if it collides with an enemy ship.
+            this.Destroy();
+        }
+    }
+
+    private void OnDestroy()
+    {
+        // If this player ship gets destroyed for any reason, then notify the GameManager the game is over.
         GameManager.instance.GameOver();
     }
 }
