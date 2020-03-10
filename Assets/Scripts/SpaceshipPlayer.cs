@@ -7,73 +7,50 @@
     Description:    Script for the players' spaceship. Inherits from Spaceship.
 */
 
-
-//[ RequireComponent( typeof( Rigidbody ) ) ] // Require a Rigidbody for collisions (Eg with enemy ships etc)
 public class SpaceshipPlayer : Spaceship
 {
     // Properties
-    public KeyCode moveLeftKey = KeyCode.LeftArrow;         // Key the player presses to move the player ship left.
-    public KeyCode moveRightKey = KeyCode.RightArrow;       // Key the player presses to move the player ship right.
-    public KeyCode fireKey = KeyCode.Space;                 // Key the player presses to shoot a bullet.
-    
-    // Methods
-    private void Start()
-    {
-        // Set the parent class isPlayer property to true.
-        this.isPlayer = true;
-    }
+    public KeyCode moveLeftKey = KeyCode.LeftArrow;     // Key the player presses to move the player ship left.
+    public KeyCode moveRightKey = KeyCode.RightArrow;   // Key the player presses to move the player ship right.
+    public KeyCode fireKey = KeyCode.Space;             // Key the player presses to shoot a bullet.
 
+    // Methods
     private void Update()
     {
         // Check for left/right movement keys.
         if( Input.GetKey( this.moveLeftKey ) == true ) { this.transform.position += this.transform.right * this.moveSpeed * Time.deltaTime; }
         if( Input.GetKey( this.moveRightKey ) == true ) { this.transform.position -= this.transform.right * this.moveSpeed * Time.deltaTime; }
 
-        // Check the ship is still within range. If not, move it back into range.
-        Vector3 position = this.transform.position; // We can't change transform.position.x directly, so must put it in a temporary variable.
-        if( position.x > this.maximumMoveRange ) { position.x = this.maximumMoveRange; } // Check if x position is greater than maximum.
-        if( position.x < -this.maximumMoveRange ){ position.x = -this.maximumMoveRange; } // Check if x position is less than minimum (Eg negative maximum)
-        this.transform.position = position; // Assign the position back to the transform.position.
-
         // Check if the player is firing.
-        if( Input.GetKey( this.fireKey ) == true ) { this.Fire(); }
+        if( Input.GetKey( this.fireKey ) == true )
+        {
+            this.Fire( true ); // Passing in 'true' here will mark the bullet as fired from the player (Eg not an enemy)
+        }
+
+        // Keep the player ship within the screen horizontal bounds.
+        Vector3 position = this.transform.position; // We can't change transform.position.x directly, so must put it in a temporary variable.
+        position.x = Mathf.Clamp( position.x, -GameManager.GetScreenEdges().x, GameManager.GetScreenEdges().x );
+        this.transform.position = position;           
     }
 
-    private void OnTriggerEnter( Collider collider )
+    public override bool HitByBullet( Bullet bullet )
     {
-        // Check if the colliding game object has a Bullet component.
-        Bullet bullet = collider.gameObject.GetComponent<Bullet>();
-        if( bullet != null )
-        {
-            if( bullet.isPlayerBullet == false )
-            {
-                // Do damge to this ship.
-                this.TakeDamage( bullet.damage );
+        // Check if a player fired bullet. If so, ignore.
+        if( bullet.isPlayerBullet == true ) { return false; }
 
-                // Check if this player has no hit points left.
-                if( this.hitPoints <= 0f )
-                {
-                    // Notify the GameManager the game is over.
-                    GameManager.instance.GameOver();
-                }
+        // Do some damage.
+        this.TakeDamage( bullet.damage );
 
-                // Destroy the bullet hitting this ship.
-                Destroy( bullet.gameObject );
-            }
-        }
+        // Update the displayed score and hit points.
+        GameManager.UpdateScoreDisplayAndHitPoints();
 
-        // Check if an enemy ship is colliding with this ship.
-        SpaceshipEnemy enemyShip = collider.gameObject.GetComponent<SpaceshipEnemy>();
-        if( enemyShip != null )
-        {
-            // Destroy this ship if it collides with an enemy ship.
-            this.Destroy();
-        }
+        // Return true, indicating the bullet hit this ship.
+        return true;
     }
 
     private void OnDestroy()
     {
         // If this player ship gets destroyed for any reason, then notify the GameManager the game is over.
-        GameManager.instance.GameOver();
+        GameManager.GameOver();
     }
 }

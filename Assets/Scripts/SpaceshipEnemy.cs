@@ -9,133 +9,86 @@
 
 public class SpaceshipEnemy : Spaceship
 {
-    // Enumerators
-    public enum EnemyShipMovementType { DOWN_SCREEN, ACROSS_SCREEN, TOWARD_PLAYER }
-
     // Properties
-    public EnemyShipMovementType movementType;      // Type of movement this enemy ship makes.
-    public int scoreValue = 10;                     // Amount the score increases when a players' bullet destroys this enemy ship.
-    public float bottomOfScreenRange = -120f;       // When this enemy ship Z position is BELOW this value, it will destroy itself (Eg set so is offscreen)
+    public int scoreValue = 10;             // Amount the score increases when a players' bullet destroys this enemy ship.
+    public float randomFireTime = 5f;       // Will randomly generate time to try and fire again between 1 second and this, since last fired.
+    public Vector2 randomSpeedRange;        // Randomizes the move speed when starting and recycling this ship.
 
-    public float randomFireTime = 3f;               // Will try and fire a bullet at a random time between last fire time and randomFireTime.
-
-    private float startXOffset;                     // Record where this ship starts in the X axis (Used by enemy ships moving across the screen)
-    private bool movingLeftToRight = true;          // Track direction of movement so can drop down.
-    private float lastMoveDirection;                // Track last direction of movement to detect direction change for drop down.
+    private int originalHitPoints;          // Used when reseting this ship to the top of the screen after it has been destroyed.
+    private float nextTimeToTryFiring;      // Time (in seconds) to try to fire again.
 
     // Methods
     private void Start()
     {
-        // Set the first fire time.
-        this.nextFireTime = Time.time + Random.Range( 0f, randomFireTime );
+        // Record the original hit points so can reset when moving to the top of the screen.
+        this.originalHitPoints = this.hitPoints;
 
-        // Set the bullet type as not a player.
-        this.isPlayer = false;
+        // Randomize the starting speed.
+        this.moveSpeed = Random.Range( this.randomSpeedRange.x, this.randomSpeedRange.y );
 
-        // Record this ships starting X offset position.
-        this.startXOffset = this.transform.position.x;
+        // Set the first random fire time for this ship.
+        this.nextTimeToTryFiring = Time.time + Random.Range( 1f, this.randomFireTime );
     }
 
     private void Update()
     {
-        // Do this enemys movement type.
-        switch( this.movementType )
+        // Move this enemy ship down the screen at an even rate.
+        this.transform.position -= this.transform.forward * this.moveSpeed * Time.deltaTime;
+
+        // Check for random firing time.
+        if( Time.time >= this.nextTimeToTryFiring )
         {
-            case EnemyShipMovementType.DOWN_SCREEN:
-                // Move this enemy ship down the screen at an even rate. Fire if player is in front of it within an angle range.
-                this.transform.position -= this.transform.forward * this.moveSpeed * Time.deltaTime;
-                break;
-
-            case EnemyShipMovementType.ACROSS_SCREEN:
-                // Move this enemy ship across the screen at an even rate.
-                Vector3 position = this.transform.position;
-                float scaleHowFarSideToSideToMove = this.maximumMoveRange * 0.3f;
-                float moveDirection = Mathf.Sin( Time.time * this.moveSpeed );
-                position.x = ( moveDirection * scaleHowFarSideToSideToMove ) + this.startXOffset;
-
-                // Check for move direction change.
-                if( this.movingLeftToRight == true && moveDirection - this.lastMoveDirection < 0f )
-                {
-                    position.z -= 10f;
-                    this.movingLeftToRight = false; // Moving right to left.
-                }
-                else if( this.movingLeftToRight == false && moveDirection - this.lastMoveDirection > 0f )
-                {
-                    position.z -= 10f;
-                    this.movingLeftToRight = true; // Moving left to right.
-                }
-
-                // Update the last move direction and this ships position.
-                this.lastMoveDirection = moveDirection;
-                this.transform.position = position;
-                break;
-
-            case EnemyShipMovementType.TOWARD_PLAYER:
-                // Move this enemy ship towards the players current position.
-                SpaceshipPlayer playerShip = GameObject.FindObjectOfType<SpaceshipPlayer>(); // Find the SpaceshipPlayer component in the scene (Note: will return the first one found!)
-                if( playerShip != null )
-                {
-                    if( playerShip.transform.position.z < this.transform.position.z ) // ONLY move this ship towards the player if the player ship is BELOW this ship on screen.
-                    {
-                        // Move towards the players ship.
-                        this.transform.position += ( playerShip.transform.position - this.transform.position ).normalized * this.moveSpeed * Time.deltaTime;
-                    }
-                }
-                this.transform.position -= this.transform.forward * this.moveSpeed * Time.deltaTime; // Keep moving down the screen (So player can dodge them)
-                break;
-        }
-
-        // Check for firing.
-        if( Time.time >= this.nextFireTime )
-        {
-            // Fire (Note: Rate of fire will still dictate if will fire or not)
             this.Fire();
 
-            // Set the next fire time.
-            this.nextFireTime = Time.time + Random.Range( 0f, randomFireTime );
+            // Set the next random fire time for this ship.
+            this.nextTimeToTryFiring = Time.time + Random.Range( 1f, this.randomFireTime );
         }
 
-        // Check if off the bottom of the screen. If so, destroy this ship.
-        if( this.transform.position.z < this.bottomOfScreenRange )
-        {
-            this.destroyedSound = null; // Remove any destroy sound.
-            this.destroyedParticleSystem = null; // Remove any particle system.
-            Destroy( this.gameObject );
-        }
+        // Check if this ship is off the bottom of the screen. If so, recycle the ship to the top of the screen.
+        if( this.transform.position.z < -GameManager.GetScreenEdges().y ) { this.RecycleShip(); }
     }
 
-    public override void TakeDamage( int amountOfDamage )
+    public override bool HitByBullet( Bullet bullet )
     {
-        // First run the parent class TakeDamage method.
-        base.TakeDamage( amountOfDamage );
-
-        // Check if this ship is destroyed.
-        if( this.hitPoints <= 0 )
+        // Check if an enemy fired bullet. If so, ignore.
+        if( bullet.isPlayerBullet == false )
         {
-            // Increase the score.
-            GameManager.instance.AddScore( this.scoreValue );
+            // Help move the enemy fired bullet past this enemy ship.
+            //Vector3 position = bullet.transform.position;
+            //position.z = this.transform.position.z;
+            //bullet.transform.position = position;
+
+            return false;
         }
+
+        // Do some damage.
+        this.TakeDamage( bullet.damage );
+        
+        // Return true, indicating the bullet hit this ship.
+        return true;
     }
 
-    private void OnTriggerEnter( Collider collider )
+    protected override void DestroyShip()
     {
-        // Check if another enemy is hitting this enemy.
-        SpaceshipEnemy otherEnemy = collider.gameObject.GetComponent<SpaceshipEnemy>();
-        if( otherEnemy != null ) { return; } // If another enemy is hitting this enemy then do nothing.
+        // If this ship gets 'destroyed' here, award the player some points before recycling this enemy ship.
+        GameManager.AddToScore( this.scoreValue );
 
-        // Check if a bullet is hitting this enemy ship.
-        Bullet bullet = collider.gameObject.GetComponent<Bullet>();
-        if( bullet != null )
-        {
-            // Check if it is a player bullet hitting this enemy. If so, do damage.
-            if( bullet.isPlayerBullet == true )
-            {
-                // Do damage to this enemy ship.
-                this.TakeDamage( bullet.damage );
-            }
+        // Recycle the ship (Instead of destroying its game object!)
+        this.RecycleShip();
+    }
 
-            // Destroy the bullet game object.
-            Destroy( bullet.gameObject );
-        }
+    private void RecycleShip()
+    {
+        // Recycle this ship to the top of the screen instead of destroying it.
+        Vector3 position = this.transform.position;
+        position.z = GameManager.GetScreenEdges().y;
+        position.x = Random.Range( -GameManager.GetScreenEdges().x, GameManager.GetScreenEdges().x );
+        this.transform.position = position;
+
+        // Randomize the starting speed.
+        this.moveSpeed = Random.Range( this.randomSpeedRange.x, this.randomSpeedRange.y );
+
+        // Reset hit points.
+        this.hitPoints = this.originalHitPoints;
     }
 }
