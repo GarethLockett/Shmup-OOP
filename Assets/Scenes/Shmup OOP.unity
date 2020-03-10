@@ -1175,6 +1175,12 @@ PrefabInstance:
       propertyPath: destroyedSound
       value: 
       objectReference: {fileID: 8300000, guid: f2f2e35476e29824ab0d69270846637f, type: 3}
+    - target: {fileID: 5715334745412493523, guid: 419406ebe8ce02b4085dd54232486fe1,
+        type: 3}
+      propertyPath: destroyedParticleSystem
+      value: 
+      objectReference: {fileID: 3276143498104395397, guid: f0a7dfba9b402b44ba700a149b723350,
+        type: 3}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 419406ebe8ce02b4085dd54232486fe1, type: 3}
 --- !u!1 &8296172668418016367 stripped
