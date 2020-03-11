@@ -53,11 +53,6 @@ public class SpaceshipEnemy : Spaceship
         // Check if an enemy fired bullet. If so, ignore.
         if( bullet.isPlayerBullet == false )
         {
-            // Help move the enemy fired bullet past this enemy ship.
-            //Vector3 position = bullet.transform.position;
-            //position.z = this.transform.position.z;
-            //bullet.transform.position = position;
-
             return false;
         }
 
